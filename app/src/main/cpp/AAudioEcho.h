@@ -10,7 +10,8 @@
 #include <android/log.h>
 #include <aaudio/AAudio.h>
 
-#define SAMPLE_COUNT 128
+#define SAMPLE_COUNT 192
+#define SAMPLE_RATE 48000
 
 using namespace std;
 

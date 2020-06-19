@@ -8,6 +8,8 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, MODULE_NAME, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, MODULE_NAME, __VA_ARGS__)
 
+FILE *pcmFile = NULL;
+
 aaudio_data_callback_result_t AAudioEcho::audio_callback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
 {
     AAudioEcho *context = (AAudioEcho *)userData;
@@ -16,13 +18,15 @@ aaudio_data_callback_result_t AAudioEcho::audio_callback(AAudioStream *stream, v
         return AAUDIO_CALLBACK_RESULT_STOP;
     }
     AAudioStream_write(context->outputStream, audioData, numFrames, 3000);
+//    fwrite(audioData, sizeof(int16_t), numFrames, pcmFile);
     return AAUDIO_CALLBACK_RESULT_CONTINUE;
 
 
 }
 
 AAudioEcho::AAudioEcho() {
-    buffer = (int16_t *)calloc(2 * SAMPLE_COUNT, sizeof(int16_t));
+    buffer = (int16_t *)calloc(SAMPLE_COUNT, sizeof(int16_t));
+//    pcmFile = fopen("/sdcard/test.pcm", "wb");
 }
 
 AAudioEcho::~AAudioEcho() {
@@ -30,6 +34,11 @@ AAudioEcho::~AAudioEcho() {
     {
         free(buffer);
     }
+//    if(pcmFile)
+//    {
+//        fflush(pcmFile);
+//        fclose(pcmFile);
+//    }
 }
 
 void AAudioEcho::init() {
@@ -44,8 +53,8 @@ void AAudioEcho::init() {
 
     AAudioStreamBuilder_setBufferCapacityInFrames(builder, SAMPLE_COUNT);
     AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-    AAudioStreamBuilder_setChannelCount(builder, 2);
-    AAudioStreamBuilder_setSampleRate(builder, 16000);
+    AAudioStreamBuilder_setChannelCount(builder, 1);
+    AAudioStreamBuilder_setSampleRate(builder, SAMPLE_RATE);
 
     AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_INPUT);
 
@@ -57,7 +66,7 @@ void AAudioEcho::init() {
         return;
     }
 
-    AAudioStreamBuilder_setChannelCount(builder, 2);
+    AAudioStreamBuilder_setChannelCount(builder, 1);
     AAudioStreamBuilder_setDataCallback(builder, NULL, NULL);
     AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_OUTPUT);
     result = AAudioStreamBuilder_openStream(builder, &outputStream);
